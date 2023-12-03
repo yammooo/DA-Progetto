@@ -17,4 +17,9 @@ public class Category {
     public double getLambdaService() {return _lambdaService;}
     public int getSeedArrival() {return _seedArrival;}
     public int getSeedService() {return _seedService;}
+
+    @Override
+    public String toString(){
+        return String.format("Category{lambdaArrival=%s, lambdaService=%s, seedArrival=%s, seedService=%s}", _lambdaArrival, _lambdaService, _seedArrival, _seedService);
+    }
 }

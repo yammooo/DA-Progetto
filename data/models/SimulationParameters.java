@@ -14,4 +14,10 @@ public class SimulationParameters {
 
     public Map<String, Integer> getParam() {return _param;}
     public List<Category> getCategories() {return _categories;}
+
+    @Override
+    public String toString() {
+        String endl = System.lineSeparator();
+        return String.format("SimulationParameters{%s  param=%s,%s  categories=%s%s}", endl, _param, endl, _categories, endl);
+    }
 }
