@@ -7,14 +7,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
-import data.models.Category;
+import data.models.ExpDistGenerator;
 import data.models.SimulationParameters;
 
 public class SimulationDataHandler{
 
     public static SimulationParameters readFileData(String fileName){
         Map<String, Integer> param = new HashMap<String, Integer>();
-        List<Category> categories = new ArrayList<Category>();
+        List<ExpDistGenerator> expDistGenerators = new ArrayList<ExpDistGenerator>();
 
         try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
             String line = br.readLine();
@@ -29,11 +29,11 @@ public class SimulationDataHandler{
             while ((line = br.readLine()) != null) {
                 lineCount++;
                 parts = line.split(",");
-                double lambdaArrival = Double.parseDouble(parts[0]);
-                double lambdaService = Double.parseDouble(parts[1]);
+                float lambdaArrival = Float.parseFloat(parts[0]);
+                float lambdaService = Float.parseFloat(parts[1]);
                 int seedArrival = Integer.parseInt(parts[2]);
                 int seedService = Integer.parseInt(parts[3]);
-                categories.add(new Category(lambdaArrival, lambdaService, seedArrival, seedService));
+                expDistGenerators.add(new ExpDistGenerator(lambdaArrival, lambdaService, seedArrival, seedService));
             }
 
             if (lineCount != param.get("H")) {
@@ -43,7 +43,7 @@ public class SimulationDataHandler{
             throw new RuntimeException("Error reading file: " + e.getMessage(), e);
         }
 
-        return new SimulationParameters(param, categories);
+        return new SimulationParameters(param, expDistGenerators);
     }
 
 }
