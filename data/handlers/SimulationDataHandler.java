@@ -46,4 +46,7 @@ public class SimulationDataHandler{
         return new SimulationParameters(param, expDistGenerators);
     }
 
+    public static boolean areExtraArgsRequired(SimulationParameters params){
+        return params.getParam().get("R") == 1 && params.getParam().get("N") <= 10 && params.getParam().get("P") == 0;
+    }
 }

@@ -13,7 +13,7 @@ public class SimulationParameters {
     }
 
     public Map<String, Integer> getParam() {return _param;}
-    public List<ExpDistGenerator> getCategories() {return _expDistGenerators;}
+    public List<ExpDistGenerator> getExpDistGenerators() {return _expDistGenerators;}
 
     @Override
     public String toString() {

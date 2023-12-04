@@ -15,7 +15,6 @@ public class ExpDistGenerator {
         _lambdaService = lambdaService;
         _seedArrival = seedArrival;
         _seedService = seedService;
-
         _randomArrival = new Random(_seedArrival);
         _randomService = new Random(_seedService);
     }
