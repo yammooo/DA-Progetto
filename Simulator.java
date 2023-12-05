@@ -6,7 +6,7 @@ import simulation.Simulation;
 public class Simulator {
     public static void main(String args[]){
 
-        boolean isDebug = true;
+        boolean isDebug = false;
 
         SimulationParameters params = SimulationDataHandler.readFileData("Simulator parameters.txt");
         if (isDebug) {
