@@ -45,31 +45,40 @@ public class Simulation {
         // The type of processing depends on the type of event that 'e' represents
         for(int i=0; !_Q.isEmpty(); i++) {
 
-            Event removedEvent = _Q.remove();
+            Event removedEvent = _Q.remove(); // An entry e(te, ve) with the minimum key is extracted from Q
             int categoryOfRemoved = removedEvent.getValue().getCategoryNumber();
-            float timeofRemoved = removedEvent.getTime();
+            float timeOfRemoved = removedEvent.getTime();
 
-            if(_isDebug) System.out.println("Processing event " + i + ": category " + categoryOfRemoved + ", time " + timeofRemoved + ", isArrival " + removedEvent.getValue().isArrival());
+            if(_isDebug) System.out.println("Processing event " + i + ": category " + categoryOfRemoved + ", time " + timeOfRemoved + ", isArrival " + removedEvent.getValue().isArrival());
 
+            // If e represents the arrival of a job
             if(removedEvent.getValue().isArrival()) {
 
+                // A new entry representing the arrival of the next job of category Cr is added to Q
+                // Make sure that the number of jobs created is less than N
                 if(jobsCreated < _params.getParam().get("N")){
-                    float newTime = timeofRemoved + _params.getExpDistGenerators().get(categoryOfRemoved).nextArrivalTime();
+                    float newTime = timeOfRemoved + _params.getExpDistGenerators().get(categoryOfRemoved).nextArrivalTime();
                     _Q.add(Event.createArrivalEvent(newTime, categoryOfRemoved, jobsCreated++));
                 }
 
-                int selectedServer = roundRobinPolicy(((ArrivalEventValue)removedEvent.getValue()).getArrivalNumber()); // Implement for P = 1
+                // A server S is selected for job J according to a scheduling policy
+                int selectedServer = roundRobinPolicy(((ArrivalEventValue)removedEvent.getValue()).getArrivalNumber());
 
-                if(!_servers.get(selectedServer).isEmpty()) { // If S is busy
+                // If S is busy, J is put in the FIFO queue of S
+                // Otherwise J is scheduled for immediate execution in S
+                if(!_servers.get(selectedServer).isEmpty()) {
                     _servers.get(selectedServer).add(removedEvent);
                 } else {
+                    // A new entry is added to Q, which represents the end of the execution of J at time te + se
                     float serviceTime = _params.getExpDistGenerators().get(categoryOfRemoved).nextServiceTime();
-                    _Q.add(Event.createEndOfExecutionEvent(timeofRemoved + serviceTime, categoryOfRemoved, selectedServer, serviceTime));
+                    _Q.add(Event.createEndOfExecutionEvent(timeOfRemoved + serviceTime, categoryOfRemoved, selectedServer, serviceTime));
                 }
 
             } else {
                 int eventServer = ((EndOfExecutionEventValue)removedEvent.getValue()).getServerNumber();
 
+                // If the FIFO queue of S is not empty, the first job J' is removed from this queue
+                // J' is scheduled for immediate execution in S, inserting in Q a new entry which represents the end of the execution of J'
                 if(!_servers.get(eventServer).isEmpty()) {
                     Event removedFromFIFO = _servers.get(eventServer).remove();
                     float serviceTime = _params.getExpDistGenerators().get(removedFromFIFO.getValue().getCategoryNumber()).nextServiceTime();
@@ -80,7 +89,7 @@ public class Simulation {
 
             
             if(!_isDebug && _areExtraArgsRequired) {
-                System.out.print(timeofRemoved + ",");
+                System.out.print(timeOfRemoved + ",");
                 System.out.print(removedEvent.getServiceTime() + ",");
                 System.out.println(categoryOfRemoved + ",");
             }
