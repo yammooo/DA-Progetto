@@ -31,8 +31,8 @@ public class SimulationDataHandler{
                 parts = line.split(",");
                 float lambdaArrival = Float.parseFloat(parts[0]);
                 float lambdaService = Float.parseFloat(parts[1]);
-                int seedArrival = Integer.parseInt(parts[2]);
-                int seedService = Integer.parseInt(parts[3]);
+                long seedArrival = Long.parseLong(parts[2]);
+                long seedService = Long.parseLong(parts[3]);
                 expDistGenerators.add(new ExpDistGenerator(lambdaArrival, lambdaService, seedArrival, seedService));
             }
 

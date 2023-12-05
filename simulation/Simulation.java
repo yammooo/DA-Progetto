@@ -30,7 +30,9 @@ public class Simulation {
     }
 
     public void run(){
-        if(_isDebug) System.out.println("Simulation running...");
+        if (_isDebug) System.out.println("Simulation running...");
+
+        int jobsCreated = 0;
 
         // Q is initialized with the H events representing the arrivals of the first jobs of the various categories
         for(int categoryNumber = 0; categoryNumber < _params.getParam().get("H"); categoryNumber++){
@@ -38,38 +40,52 @@ public class Simulation {
             _Q.add(new Event(time, true, categoryNumber));
         }
 
+        jobsCreated += _params.getParam().get("H");
+
         // Execute a loop where in each iteration, an entry 'e' with the minimum key is extracted from 'Q' and processed
         // The type of processing depends on the type of event that 'e' represents
-        for(int i=0; i < _params.getParam().get("N"); i++) {
+        for(int i=0; !_Q.isEmpty(); i++) {
 
             Event removedEvent = _Q.remove();
-            int categoryNumber = removedEvent.getValue().getCategoryNumber();
-            float time = removedEvent.getTime();
+            int categoryOfRemoved = removedEvent.getValue().getCategoryNumber();
+            float timeofRemoved = removedEvent.getTime();
+            float serviceTime = (float) 0.0;
 
-            if(_isDebug) System.out.println("Processing event " + i + ": category " + categoryNumber + ", time " + time);
+            if(_isDebug) System.out.println("Processing event " + i + ": category " + categoryOfRemoved + ", time " + timeofRemoved + ", isArrival " + removedEvent.getValue().isArrival());
 
             if(removedEvent.getValue().isArrival()) {
 
-                _Q.add(new Event(time + _params.getExpDistGenerators().get(categoryNumber).nextArrivalTime(), true, categoryNumber));
-                
+                if(jobsCreated < _params.getParam().get("N")){
+                    _Q.add(new Event(timeofRemoved + _params.getExpDistGenerators().get(categoryOfRemoved).nextArrivalTime(), true, categoryOfRemoved));
+                    jobsCreated++;
+                }
+
                 int selectedServer = roundRobinPolicy(i); // Implement for P = 1
 
-                if(_servers.get(selectedServer).isEmpty()) {
+                if(!_servers.get(selectedServer).isEmpty()) { // If S is busy
                     _servers.get(selectedServer).add(removedEvent);
                 } else {
-                    _Q.add(new Event(time + _params.getExpDistGenerators().get(categoryNumber).nextServiceTime(), false, categoryNumber, selectedServer));
+                    _Q.add(new Event(timeofRemoved + _params.getExpDistGenerators().get(categoryOfRemoved).nextServiceTime(), false, categoryOfRemoved, selectedServer));
                 }
 
             } else {
-
                 int eventServer = removedEvent.getValue().getServerNumber();
 
                 if(!_servers.get(eventServer).isEmpty()) {
-                    _Q.add(new Event(time + _params.getExpDistGenerators().get(categoryNumber).nextServiceTime(), false, categoryNumber, eventServer));
+                    Event removedFromFIFO = _servers.get(eventServer).remove();
+                    serviceTime = _params.getExpDistGenerators().get(removedFromFIFO.getValue().getCategoryNumber()).nextServiceTime();
+                    _Q.add(new Event(removedFromFIFO.getTime() + serviceTime, false, removedFromFIFO.getValue().getCategoryNumber(), eventServer));
                 }
 
             }
 
+            
+            if(!_isDebug && _areExtraArgsRequired) {
+                System.out.print(timeofRemoved + ",");
+                System.out.print(serviceTime + ",");
+                System.out.println(categoryOfRemoved + ",");
+            }
+            
         }
     }
 

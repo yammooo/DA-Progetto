@@ -7,10 +7,10 @@ public class ExpDistGenerator {
     private Random _randomService;
     private float _lambdaArrival;
     private float _lambdaService;
-    private int _seedArrival;
-    private int _seedService;
+    private long _seedArrival;
+    private long _seedService;
 
-    public ExpDistGenerator(float lambdaArrival, float lambdaService, int seedArrival, int seedService) {
+    public ExpDistGenerator(float lambdaArrival, float lambdaService, long seedArrival, long seedService) {
         _lambdaArrival = lambdaArrival;
         _lambdaService = lambdaService;
         _seedArrival = seedArrival;

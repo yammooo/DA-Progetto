@@ -9,7 +9,16 @@ public class Simulator {
         boolean isDebug = true;
 
         SimulationParameters params = SimulationDataHandler.readFileData("Simulator parameters.txt");
-        if (isDebug) System.out.println(params);
+        if (isDebug) {
+            System.out.println(params);
+        } else {
+            System.out.print(params.getParam().get("K") + ",");
+            System.out.print(params.getParam().get("H") + ",");
+            System.out.print(params.getParam().get("N") + ",");
+            System.out.print(params.getParam().get("R") + ",");
+            System.out.println(params.getParam().get("P"));
+        }
+
 
         boolean areExtraArgsRequired = SimulationDataHandler.areExtraArgsRequired(params);
 
