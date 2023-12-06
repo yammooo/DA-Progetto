@@ -1,5 +1,4 @@
 import data.handlers.SimulationDataHandler;
-import data.models.ExpDistGenerator;
 import data.models.SimulationParameters;
 import simulation.Simulation;
 

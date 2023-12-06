@@ -2,7 +2,7 @@ package simulation.models;
 
 public abstract class EventValue {
     protected int _categoryNumber;
-    protected float _serviceTime = (float) 0.0;
+    protected double _serviceTime = (double) 0.0;
 
     public abstract boolean isArrival();
 
@@ -10,7 +10,7 @@ public abstract class EventValue {
         return _categoryNumber;
     }
 
-    public float getServiceTime() {
+    public double getServiceTime() {
         return _serviceTime;
     }
 }

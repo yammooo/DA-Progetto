@@ -1,15 +1,9 @@
 package simulation.models;
 
 public class ArrivalEventValue extends EventValue {
-    private int _arrivalNumber;
 
-    public ArrivalEventValue(int categoryNumber, int arrivalNumber) {
+    public ArrivalEventValue(int categoryNumber) {
         _categoryNumber = categoryNumber;
-        _arrivalNumber = arrivalNumber;
-    }
-
-    public int getArrivalNumber() {
-        return _arrivalNumber;
     }
 
     @Override
