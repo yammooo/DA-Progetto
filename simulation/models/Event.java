@@ -29,8 +29,12 @@ public class Event implements Comparable<Event> {
         return _value;
     }
 
-    public boolean isValueArrival() {
+    public boolean isArrival() {
         return _value.isArrival();
+    }
+
+    public int getCategory(){
+        return _value.getCategory();
     }
 
     @Override

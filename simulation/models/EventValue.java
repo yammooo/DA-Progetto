@@ -6,7 +6,7 @@ public abstract class EventValue {
 
     public abstract boolean isArrival();
 
-    public int getCategoryNumber() {
+    public int getCategory() {
         return _categoryNumber;
     }
 

@@ -10,7 +10,7 @@ import java.util.HashMap;
 import data.models.ExpDistGenerator;
 import data.models.SimulationParameters;
 
-public class SimulationDataHandler{
+public class SimulationParamsHandler{
 
     public static SimulationParameters readFileData(String fileName){
         Map<String, Integer> param = new HashMap<String, Integer>();
