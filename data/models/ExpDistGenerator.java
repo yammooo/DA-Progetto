@@ -20,11 +20,19 @@ public class ExpDistGenerator {
     }
 
     public double nextArrivalTime() {
-        return (double) (-Math.log(1 - _randomArrival.nextFloat()) / _lambdaArrival);
+        return (-Math.log(1 - _randomArrival.nextFloat()) / _lambdaArrival);
     }
 
     public double nextServiceTime() {
         return (-Math.log(1 - _randomService.nextFloat()) / _lambdaService);
+    }
+
+    public double getLambdaService() {
+        return _lambdaService;
+    }
+
+    public double getLambdaArrival() {
+        return _lambdaArrival;
     }
 
     @Override

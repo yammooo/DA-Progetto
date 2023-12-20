@@ -11,31 +11,25 @@ import simulation.models.EndOfExecutionEventValue;
 public class Simulation {
     private SimulationParameters _params;
     private boolean _isDebug;
-    private boolean _areExtraArgsRequired;
     private PriorityQueue<Event> _Q;
     private ArrayList<Server> _servers;
     private SimulationData _simulationData;
     
-    public Simulation(SimulationParameters params, boolean areExtraArgsRequired, boolean isDebug) {
+    public Simulation(SimulationParameters params, boolean isDebug) {
         _params = params;
         _isDebug = isDebug;
-        _areExtraArgsRequired = areExtraArgsRequired;
         _Q = new PriorityQueue<Event>();
         _servers = new ArrayList<Server>();
         _simulationData = new SimulationData(_params);
 
         // Initialize each server with an empty queue of events
         for(int i = 0; i < _params.getParam().get("K"); i++) {
-            _servers.add(new Server());
+            _servers.add(new Server(_params));
         }
 
     }
 
-    public SimulationData getSimulationData() {
-        return _simulationData;
-    }
-
-    public void run(){
+    public SimulationData run(){
         String endl = System.lineSeparator();
 
         if (_isDebug) System.out.println("Simulation running...");
@@ -69,23 +63,30 @@ public class Simulation {
                 if (_isDebug) System.out.println("New job created: category " + categoryOfRemoved + ", time " + newTime);
 
                 // A server S is selected for job J according to a scheduling policy
-                int selectedServer = roundRobinPolicy(arrivalsProcessed++);
+                int selectedServerByPolicy;
+                if(_params.getParam().get("P") == 0){
+                    selectedServerByPolicy = roundRobinPolicy(arrivalsProcessed);
+                } else {
+                    selectedServerByPolicy = customPolicy(removedEvent.getTime());
+                }
+                arrivalsProcessed++;
 
                 // If S is busy, J is put in the FIFO queue of S
                 // Otherwise J is scheduled for immediate execution in S
-                if(_servers.get(selectedServer).isBusy()) {
-                    _servers.get(selectedServer).pushEvent(removedEvent);
-                    if (_isDebug) System.out.println("Server " + selectedServer + " is busy. Job added to queue.");
+                if(_servers.get(selectedServerByPolicy).isBusy()) {
+                    _servers.get(selectedServerByPolicy).addEvent(removedEvent);
+                    if (_isDebug) System.out.println("Server " + selectedServerByPolicy + " is busy. Job added to queue.");
                 } else {
                     // A new entry is added to Q, which represents the end of the execution of J at time te + se
                     double serviceTime = _params.getExpDistGenerators().get(categoryOfRemoved).nextServiceTime();
-                    _Q.add(Event.createEndOfExecutionEvent(timeOfRemoved + serviceTime, categoryOfRemoved, selectedServer, serviceTime));
+                    Event endOfExecutionEvent = Event.createEndOfExecutionEvent(timeOfRemoved + serviceTime, categoryOfRemoved, selectedServerByPolicy, serviceTime);
+                    _Q.add(endOfExecutionEvent);
+                    _servers.get(selectedServerByPolicy).setBusy(endOfExecutionEvent);
                     _simulationData.addJob(timeOfRemoved, timeOfRemoved, serviceTime, categoryOfRemoved);
-                    _servers.get(selectedServer).setBusy();
-                    if (_isDebug) System.out.println("Server " + selectedServer + " is available. Job scheduled for execution with service time " + serviceTime + ".");
+                    if (_isDebug) System.out.println("Server " + selectedServerByPolicy + " is available. Job scheduled for execution with service time " + serviceTime + ".");
                 }
 
-                if(_areExtraArgsRequired) System.out.print(timeOfRemoved + "," + removedEvent.getServiceTime() + "," + categoryOfRemoved + endl);
+                _simulationData.addExtraArg(timeOfRemoved, removedEvent.getServiceTime(), categoryOfRemoved);
 
             } else if (!removedEvent.isArrival()) {
                 int serverOfRemovedEvent = ((EndOfExecutionEventValue)removedEvent.getValue()).getServerNumber();
@@ -95,15 +96,16 @@ public class Simulation {
                 // If the FIFO queue of S is not empty, the first job J' is removed from this queue
                 // J' is scheduled for immediate execution in S, inserting in Q a new entry which represents the end of the execution of J'
                 if(!_servers.get(serverOfRemovedEvent).isFIFOEmpty()) {
-                    Event removedFromFIFO = _servers.get(serverOfRemovedEvent).popEvent();
+                    Event removedFromFIFO = _servers.get(serverOfRemovedEvent).removeEvent();
                     double serviceTime = _params.getExpDistGenerators().get(removedFromFIFO.getValue().getCategory()).nextServiceTime();
-                    _Q.add(Event.createEndOfExecutionEvent(timeOfRemoved + serviceTime, removedFromFIFO.getValue().getCategory(), serverOfRemovedEvent, serviceTime));
+                    Event endOfExecutionEvent = Event.createEndOfExecutionEvent(timeOfRemoved + serviceTime, removedFromFIFO.getValue().getCategory(), serverOfRemovedEvent, serviceTime);
+                    _Q.add(endOfExecutionEvent);
+                    _servers.get(serverOfRemovedEvent).setBusy(endOfExecutionEvent);
                     _simulationData.addJob(removedFromFIFO.getTime(), timeOfRemoved, serviceTime, removedFromFIFO.getCategory());
-                    _servers.get(serverOfRemovedEvent).setBusy();
                     if (_isDebug) System.out.println("Job removed from queue of server " + serverOfRemovedEvent + " and scheduled for execution. New end of execution event created with time " + (timeOfRemoved + serviceTime) + ".");
                 }
 
-                if(_areExtraArgsRequired) System.out.print(timeOfRemoved + "," + removedEvent.getServiceTime() + "," + categoryOfRemoved + endl);
+                _simulationData.addExtraArg(timeOfRemoved, removedEvent.getServiceTime(), categoryOfRemoved);
 
                 // Set the end time of the simulation to the time when the last job ends its execution
                 _simulationData.setEndTime(timeOfRemoved);
@@ -111,10 +113,29 @@ public class Simulation {
             
             if(_isDebug) System.out.print(endl);
         }
+
+        return _simulationData;
     }
 
     int roundRobinPolicy(int i) {
         return i % _params.getParam().get("K");
+    }
+
+    int customPolicy(double currentTime) {
+        int minIndex = 0;
+        double minServiceTime = _servers.get(minIndex).getExpFIFOServiceTime() + Math.max(0, _servers.get(minIndex).getExecutingJobTime() - currentTime);
+
+        for (int next = 1; next < _servers.size(); next++) {
+            if (!_servers.get(minIndex).isBusy()) return minIndex;
+
+            double nextServiceTime = _servers.get(next).getExpFIFOServiceTime() + Math.max(0, _servers.get(next).getExecutingJobTime() - currentTime);
+            
+            if (nextServiceTime < minServiceTime) {
+                minIndex = next;
+                minServiceTime = nextServiceTime;
+            }
+        }
+        return minIndex;
     }
 
 }
