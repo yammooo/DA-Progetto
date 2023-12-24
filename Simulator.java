@@ -10,12 +10,12 @@ A brief high-level description of the new policy:
 
 I choose the server that is expected to be free the soonest.
 
-Here is how i calculate the expected time of a server to be free:
+Here's how I calculate the expected time needed for a server to finish all its jobs:
 
 1) I look at the server's queue of jobs waiting to be executed (excluding the job it's currently working on).
-    I calculate the expected time to finish these jobs by adding up their expected service times (which is 1/λ).
+   I calculate the expected time to finish these jobs by adding up their expected service times (which is 1/λ).
 
-2) I add to this the remaining execution time of the current job being processed at that server.
+2) I add to this the remaining execution time of the current job being processed by that server.
 
 */
 
@@ -25,7 +25,7 @@ public class Simulator {
         boolean isDebug = false;
 
         // Reads the simulation parameters from a file
-        SimulationParameters params = SimulationParamsHandler.readFileData("Simulator parameters.txt");
+        SimulationParameters params = SimulationParamsHandler.readFileData(args[0]);
 
         // Object that stores the data from the R simulations.
         SimulationsData simulationsData = new SimulationsData(params);
